@@ -1,0 +1,19 @@
+# Node.js dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+
+# IDE or editor specific files
+.vscode/
+.idea/
+
+# Ignore package-lock.json if you are using npm
+package-lock.json
+
+# Ignore .DS_Store files (created by macOS)
+.DS_Store
