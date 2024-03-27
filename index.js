@@ -1,19 +1,25 @@
 // Import dependencies
 const express = require('express')
 const mongoose = require('mongoose')
-const path = require('path')
 const jwt = require('jsonwebtoken')
 const bodyParser = require('body-parser')
 const bcrypt = require('bcrypt')
+const axios = require('axios');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
 
-// import middleware
+// Import middleware
 const verifyToken = require('./middleware/verifyToken');
 
 // Initialize Express app
 const app = express()
 
-// middleware to parse the JSON data
-app.use(express.json())
+// Middleware to parse JSON data
+app.use(express.json());
+
+// Serve Swagger UI at /api-docs endpoint
+const swaggerDocument = YAML.load('./swagger.yaml');
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Connect to MongoDB cluster
 mongoose.connect('mongodb+srv://Prashanth:' + encodeURIComponent('Prashanth@0509') + '@cluster0.vi6nqw1.mongodb.net/')
@@ -23,6 +29,13 @@ mongoose.connect('mongodb+srv://Prashanth:' + encodeURIComponent('Prashanth@0509
 // Define routes
 app.get('/', (req, res) => {
     res.send('Hello World!');
+});
+
+// Define error handling middleware
+//to handle any errors that occur during the processing of requests
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
 });
 
 // Start the server
@@ -38,7 +51,7 @@ const User =  mongoose.model('User',{
     password: String
 })
 
-// end point for user registration 
+// API Endpoint for user registration 
 app.post('/register', async (req,res)=>{
     try{
         const { username, email, password } = req.body;
@@ -75,7 +88,7 @@ app.get('/protected', verifyToken, (req, res) => {
     res.json({ success: true, message: 'Authenticated user.' });
 });
 
-// end point for user login
+// API Endpoint for user login
 
 app.post('/login', async (req, res) => {
     try {
@@ -106,4 +119,64 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ success: false, message: 'Login failed' });
     }
 });
+
+// logout typically involves the client-side destroying the token.
+
+// API Endpoints for Data Retrieval
+
+// Fetch data from the public API
+async function fetchData() {
+    try {
+        const response = await axios.get('https://api.publicapis.org/entries');
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        return [];
+    }
+}
+
+// API endpoint to get all data
+app.get('/entries', verifyToken, async (req, res) => {
+    try {
+        const data = await fetchData();
+        res.send(data.entries);
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// API endpoint to get filtered data 
+// Example: http://localhost:3000/entries/filtered?category=Anime&limit=10
+
+app.get('/entries/filtered', verifyToken, async (req, res) => {
+    try {
+        // Extract query parameters from the request URL
+        const { category, limit } = req.query;
+        const data = await fetchData();
+
+        // Set default values for category and limit if they are not provided
+        // if category is empty/null/undefined, it retrieves all categories by default 
+        // if limit is empty/null/undefined, it limits 10 by default
+
+        const defaultLimit = 10;
+        const selectedLimit = limit || defaultLimit;
+
+        let filteredData = data.entries; // Assuming 'data' is the variable containing the retrieved data
+
+        // Filter based on category if provided
+        if (category) {
+            filteredData = filteredData.filter(entry => entry.Category.toLowerCase() === category.toLowerCase());
+        }
+
+        // Apply result limit
+        filteredData = filteredData.slice(0, parseInt(selectedLimit, 10));
+
+        res.send(filteredData);
+    } catch (error) {
+        console.error('Error filtering data:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
 

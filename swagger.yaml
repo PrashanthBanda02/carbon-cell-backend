@@ -1,0 +1,250 @@
+swagger: '2.0'
+info:
+  title: My Express API Documentation
+  description: Documentation for my Express.js API endpoints
+  version: '1.0'
+
+# Define common security schemes
+securityDefinitions:
+  JWTAuth:
+    type: apiKey
+    name: Authorization
+    in: header
+
+paths:
+  /register:
+    post:
+      summary: Register a new user
+      description: Creates a new user account with the provided credentials.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: user
+          description: User object
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        201:
+          description: User registered successfully
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+          examples:
+            success: true
+            message: User registered successfully
+        400:
+          description: User with this email already exists
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          examples:
+            message: User with this email already exists
+
+  /login:
+    post:
+      summary: User login
+      description: Logs in a user with the provided credentials and returns a JWT token.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: credentials
+          description: User credentials
+          required: true
+          schema:
+            $ref: '#/definitions/UserCredentials'
+      responses:
+        200:
+          description: Successful login
+          schema:
+            $ref: '#/definitions/LoginResponse'
+          examples:
+            success: true
+            token: "<JWT Token>"
+        401:
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/LoginErrorResponse'
+          examples:
+            message: Invalid credentials
+
+  /protected:
+    get:
+      summary: Protected route
+      description: Accessible only with a valid JWT token in the Authorization header.
+      security:
+        - JWTAuth: []
+      parameters:
+      - name: Authorization
+        in: header
+        type: string
+        required: true
+        description: JWT token in the format 'Bearer jwt-token'
+      responses:
+        200:
+          description: Authenticated user
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+          examples:
+            success: true
+            message: Authenticated user
+        401:
+          description: Unauthorized access
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          examples:
+            message: Unauthorized access
+        403:
+          description: Access denied. No token provided.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          examples:
+            message: Access denied. No token provided.
+
+  /entries:
+    get:
+      summary: Get all data
+      description: Retrieves all data from the public API.
+      security:
+        - JWTAuth: []
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          required: true
+          description: JWT token in the format 'Bearer jwt-token'
+      responses:
+        200:
+          description: List of data entries
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/DataEntry'
+          examples:
+            data: <list of data entries>
+        401:
+          description: Unauthorized access
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          examples:
+            message: Unauthorized access
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          examples:
+            error: Internal Server Error
+
+  /entries/filtered:
+    get:
+      summary: Get filtered data
+      description: Retrieves filtered data based on category and limit parameters.
+      security:
+        - JWTAuth: []
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          required: true
+          description: JWT token in the format 'Bearer jwt-token'
+        - in: query
+          name: category
+          description: Category to filter by
+          type: string
+        - in: query
+          name: limit
+          description: Maximum number of entries to return
+          type: integer
+      responses:
+        200:
+          description: Filtered list of data entries
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/DataEntry'
+          examples:
+            data: <filtered list of data entries>
+        401:
+          description: Unauthorized access
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          examples:
+            message: Unauthorized access
+        403:
+          description: Access denied. No token provided.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          examples:
+            message: Access denied. No token provided.
+
+definitions:
+  User:
+    type: object
+    properties:
+      username:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+
+  UserCredentials:
+    type: object
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+
+  LoginResponse:
+    type: object
+    properties:
+      success:
+        type: boolean
+      token:
+        type: string
+
+  LoginErrorResponse:
+    type: object
+    properties:
+      success:
+        type: boolean
+      message:
+        type: string
+
+  DataEntry:
+    type: object
+    properties:
+      API:
+        type: string
+      Description:
+        type: string
+      Auth:
+        type: string
+      HTTPS:
+        type: boolean
+      Cors:
+        type: string
+      Link:
+        type: string
+
+  SuccessResponse:
+    type: object
+    properties:
+      success:
+        type: boolean
+      message:
+        type: string
+
+  ErrorResponse:
+    type: object
+    properties:
+      success:
+        type: boolean
+      message:
+        type: string
+

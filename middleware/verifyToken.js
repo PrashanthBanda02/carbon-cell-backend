@@ -18,6 +18,7 @@ const verifyToken = (req, res, next) => {
 
         // Add decoded token data to request object
         req.user = decoded;
+        // console.log('Token verified successfully!')
 
         // Proceed to next middleware or route handler
         next();
