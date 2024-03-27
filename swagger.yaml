@@ -180,6 +180,46 @@ paths:
             $ref: '#/definitions/ErrorResponse'
           examples:
             message: Access denied. No token provided.
+  /ethbalance/{address}:
+    get:
+      summary: Get Ethereum balance by address
+      description: Retrieves the Ethereum balance for the specified address.
+      security:
+        - JWTAuth: []
+      parameters:
+        - in: path
+          name: address
+          required: true
+          type: string
+          description: Ethereum address for which to retrieve the balance
+        - in: header
+          name: Authorization
+          type: string
+          required: true
+          description: JWT token in the format 'Bearer jwt-token'
+      responses:
+        200:
+          description: Ethereum balance retrieved successfully
+          schema:
+            type: object
+            properties:
+              balance:
+                type: string
+                description: Ethereum balance in Ether
+          examples:
+            balance: "0.5"
+        401:
+          description: Unauthorized access
+          schema:
+            $ref: '#/definitions/ethBalanceErrorResponse'
+          examples:
+            message: Unauthorized access
+        500:
+          description: Error fetching balance
+          schema:
+            $ref: '#/definitions/ethBalanceErrorResponse'
+          examples:
+            message: Error fetching balance: Error message details
 
 definitions:
   User:
@@ -245,6 +285,11 @@ definitions:
     properties:
       success:
         type: boolean
+      message:
+        type: string
+  ethBalanceErrorResponse:
+    type: object
+    properties:
       message:
         type: string
 

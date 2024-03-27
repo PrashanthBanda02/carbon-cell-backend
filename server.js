@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt')
 const axios = require('axios');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
+const {Web3} = require('web3');
 
 // Import middleware
 const verifyToken = require('./middleware/verifyToken');
@@ -179,4 +180,17 @@ app.get('/entries/filtered', verifyToken, async (req, res) => {
 });
 
 
+// Task 5: Retrieve Ethereum Account Balance with web3.js
+
+const web3 = new Web3('https://mainnet.infura.io/v3/1cfb48b3d40342db94d478bffece4e02');  // connect to an Ethereum node
+
+app.get('/ethbalance/:address', async (req, res) => {
+    try {
+        const balanceWei = await web3.eth.getBalance(req.params.address);      // fetch the balance of the provided Ethereum address
+        const balanceEth = web3.utils.fromWei(balanceWei, 'ether');            // Convert the balance from Wei to Ether.
+        res.send({ balance: balanceEth });
+    } catch (error) {
+        res.status(500).send('Error fetching balance :',error);
+    }
+});
 
