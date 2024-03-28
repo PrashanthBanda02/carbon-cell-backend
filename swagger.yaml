@@ -38,7 +38,7 @@ paths:
         400:
           description: User with this email already exists
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ErrorResponse2'
           examples:
             message: User with this email already exists
 
@@ -211,13 +211,13 @@ paths:
         401:
           description: Unauthorized access
           schema:
-            $ref: '#/definitions/ethBalanceErrorResponse'
+            $ref: '#/definitions/ErrorResponse2'
           examples:
             message: Unauthorized access
         500:
           description: Error fetching balance
           schema:
-            $ref: '#/definitions/ethBalanceErrorResponse'
+            $ref: '#/definitions/ErrorResponse2'
           examples:
             message: Error fetching balance: Error message details
 
@@ -287,7 +287,7 @@ definitions:
         type: boolean
       message:
         type: string
-  ethBalanceErrorResponse:
+  ErrorResponse2:
     type: object
     properties:
       message:

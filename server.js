@@ -28,12 +28,15 @@ mongoose.connect('mongodb+srv://Prashanth:' + encodeURIComponent('Prashanth@0509
     .catch(err => console.error('MongoDB connection error:', err));
 
 // Define routes
+// app.get('/', (req, res) => {
+//     res.send('Hello World!');
+// });
+
 app.get('/', (req, res) => {
-    res.send('Hello World!');
+    res.redirect('/api-docs');
 });
 
-// Define error handling middleware
-//to handle any errors that occur during the processing of requests
+// Define error handling middleware to handle any errors that occur during the processing of requests
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
@@ -63,8 +66,7 @@ app.post('/register', async (req,res)=>{
             return res.status(400).json({ message: 'User with this email already exists' });
         }
 
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password,10)
+        const hashedPassword = await bcrypt.hash(password,10)    // Hash the password
 
         // Create a new user with hashed password
         const newUser = new User({username,email, password: hashedPassword})
@@ -184,13 +186,13 @@ app.get('/entries/filtered', verifyToken, async (req, res) => {
 
 const web3 = new Web3('https://mainnet.infura.io/v3/1cfb48b3d40342db94d478bffece4e02');  // connect to an Ethereum node
 
-app.get('/ethbalance/:address', async (req, res) => {
+app.get('/ethbalance/:address',verifyToken, async (req, res) => {
     try {
         const balanceWei = await web3.eth.getBalance(req.params.address);      // fetch the balance of the provided Ethereum address
         const balanceEth = web3.utils.fromWei(balanceWei, 'ether');            // Convert the balance from Wei to Ether.
         res.send({ balance: balanceEth });
     } catch (error) {
-        res.status(500).send('Error fetching balance :',error);
+        res.status(500).send('Error fetching balance');
     }
 });
 

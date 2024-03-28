@@ -6,7 +6,7 @@ const verifyToken = (req, res, next) => {
     const authHeader = req.header('Authorization');
     const token = authHeader && authHeader.split(' ')[1]
 
-    // Check if token is present
+    // Check for token 
     if (!token) {
         return res.status(401).json({ success: false, message: 'Access denied. No token provided.' });
     }
@@ -23,7 +23,7 @@ const verifyToken = (req, res, next) => {
         // Proceed to next middleware or route handler
         next();
     } catch (error) {
-        console.error('Token verification error:', error);
+        console.error('Token verification error');
         return res.status(401).json({ success: false, message: 'Invalid token.' });
     }
 };
